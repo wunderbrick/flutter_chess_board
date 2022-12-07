@@ -10,71 +10,74 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ChessBoardController controller = ChessBoardController();
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomePage(),
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: Scaffold(
+          appBar: AppBar(
+            title: const Text('Chess Demo'),
+          ),
+          body: Column(children: [
+            Expanded(child: Center(child: HomePage(controller: controller))),
+            Expanded(child: OtherGameElements(controller: controller))
+          ]),
+        ));
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key, required this.controller}) : super(key: key);
+
+  final ChessBoardController controller;
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  ChessBoardController controller = ChessBoardController();
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chess Demo'),
+    return Center(
+      child: ChessBoard(
+        controller: widget.controller,
+        boardColor: BoardColor.orange,
+        boardOrientation: PlayerColor.white,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: ChessBoard(
-                controller: controller,
-                boardColor: BoardColor.orange,
-                arrows: [
-                  BoardArrow(
-                    from: 'd2',
-                    to: 'd4',
-                    //color: Colors.red.withOpacity(0.5),
-                  ),
-                  BoardArrow(
-                    from: 'e7',
-                    to: 'e5',
-                    color: Colors.red.withOpacity(0.7),
-                  ),
-                ],
-                boardOrientation: PlayerColor.white,
-              ),
-            ),
+    );
+  }
+}
+
+class OtherGameElements extends StatelessWidget {
+  const OtherGameElements({Key? key, required this.controller})
+      : super(key: key);
+
+  final ChessBoardController controller;
+
+  @override
+  build(BuildContext context) {
+    return Column(
+      children: [
+        ElevatedButton(
+            onPressed: () => controller.game.toggleMoveEnabled(),
+            child: const Text('Toggle move')),
+        Expanded(
+          child: ValueListenableBuilder<Chess>(
+            valueListenable: controller,
+            builder: (context, game, _) {
+              return Text(
+                controller.getSan().fold(
+                      '',
+                      (previousValue, element) =>
+                          previousValue + '\n' + (element ?? ''),
+                    ),
+              );
+            },
           ),
-          Expanded(
-            child: ValueListenableBuilder<Chess>(
-              valueListenable: controller,
-              builder: (context, game, _) {
-                return Text(
-                  controller.getSan().fold(
-                        '',
-                        (previousValue, element) =>
-                            previousValue + '\n' + (element ?? ''),
-                      ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

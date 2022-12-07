@@ -16,7 +16,7 @@ class ChessBoard extends StatefulWidget {
   final double? size;
 
   /// A boolean which checks if the user should be allowed to make moves
-  final bool enableUserMoves;
+  //final bool enableUserMoves;
 
   /// The color type of the board
   final BoardColor boardColor;
@@ -31,7 +31,7 @@ class ChessBoard extends StatefulWidget {
     Key? key,
     required this.controller,
     this.size,
-    this.enableUserMoves = true,
+    //this.enableUserMoves = true,
     this.boardColor = BoardColor.brown,
     this.boardOrientation = PlayerColor.white,
     this.onMove,
@@ -98,7 +98,8 @@ class _ChessBoardState extends State<ChessBoard> {
                         DragTarget<PieceMoveData>(builder: (context, list, _) {
                       return draggable;
                     }, onWillAccept: (pieceMoveData) {
-                      return widget.enableUserMoves ? true : false;
+                      return widget.controller.game
+                          .enableUserMoves; //widget.enableUserMoves ? true : false;
                     }, onAccept: (PieceMoveData pieceMoveData) async {
                       // A way to check if move occurred.
                       Color moveColor = game.turn;

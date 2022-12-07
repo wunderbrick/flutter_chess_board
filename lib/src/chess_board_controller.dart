@@ -2,18 +2,27 @@ import 'package:chess/chess.dart';
 import 'package:flutter/material.dart';
 import 'constants.dart';
 
-class ChessBoardController extends ValueNotifier<Chess> {
-  late Chess game;
+class ExtendedChess extends Chess {
+  ExtendedChess(chess);
+  late Chess chess;
+  bool enableUserMoves = true;
 
-  factory ChessBoardController() => ChessBoardController._(Chess());
+  void toggleMoveEnabled() => enableUserMoves = !enableUserMoves;
+}
+
+class ChessBoardController extends ValueNotifier<ExtendedChess> {
+  late ExtendedChess game;
+
+  factory ChessBoardController() =>
+      ChessBoardController._(ExtendedChess(Chess()));
 
   factory ChessBoardController.fromGame(Chess game) =>
-      ChessBoardController._(game);
+      ChessBoardController._(ExtendedChess(game));
 
   factory ChessBoardController.fromFEN(String fen) =>
-      ChessBoardController._(Chess.fromFEN(fen));
+      ChessBoardController._(ExtendedChess(Chess.fromFEN(fen)));
 
-  ChessBoardController._(Chess game)
+  ChessBoardController._(ExtendedChess game)
       : game = game,
         super(game);
 
@@ -40,9 +49,9 @@ class ChessBoardController extends ValueNotifier<Chess> {
   }
 
   void undoMove() {
-    if (game.half_moves == 0) {
-      return;
-    }
+    //if (game.half_moves == 0) {
+    //  return;
+    //}
     game.undo_move();
     notifyListeners();
   }
