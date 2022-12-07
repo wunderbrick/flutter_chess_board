@@ -98,8 +98,7 @@ class _ChessBoardState extends State<ChessBoard> {
                         DragTarget<PieceMoveData>(builder: (context, list, _) {
                       return draggable;
                     }, onWillAccept: (pieceMoveData) {
-                      return widget.controller.game
-                          .enableUserMoves; //widget.enableUserMoves ? true : false;
+                      return widget.controller.game.enableUserMoves;
                     }, onAccept: (PieceMoveData pieceMoveData) async {
                       // A way to check if move occurred.
                       Color moveColor = game.turn;

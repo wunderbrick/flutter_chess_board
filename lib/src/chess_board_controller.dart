@@ -2,12 +2,15 @@ import 'package:chess/chess.dart';
 import 'package:flutter/material.dart';
 import 'constants.dart';
 
-class ExtendedChess extends Chess {
-  ExtendedChess(chess);
-  late Chess chess;
-  bool enableUserMoves = true;
+enum ChessBoardMode { play, history }
 
-  void toggleMoveEnabled() => enableUserMoves = !enableUserMoves;
+class ExtendedChess extends Chess {
+  ExtendedChess(game);
+  late Chess game;
+  bool enableUserMoves = true;
+  ChessBoardMode chessBoardMode = ChessBoardMode.play;
+  String playPgnHistoryStash = '';
+  List<String> historyPgns = [];
 }
 
 class ChessBoardController extends ValueNotifier<ExtendedChess> {
@@ -160,4 +163,19 @@ class ChessBoardController extends ValueNotifier<ExtendedChess> {
         return Piece(PieceType.ROOK, convertedColor);
     }
   }
+
+  // Custom methods
+  void toggleMoveEnabled() => game.enableUserMoves = !(game.enableUserMoves);
+
+  void historyModeRewind() {
+    game.historyPgns = [game.pgn()] + game.historyPgns;
+  }
+
+  void historyModeFastForward() {
+    game.historyPgns = game.historyPgns.sublist(1);
+  }
+
+  void toggleChessBoardMode() => (game.chessBoardMode == ChessBoardMode.play)
+      ? ChessBoardMode.history
+      : ChessBoardMode.play;
 }

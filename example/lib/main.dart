@@ -43,7 +43,7 @@ class _HomePageState extends State<HomePage> {
     return Center(
       child: ChessBoard(
         controller: widget.controller,
-        boardColor: BoardColor.orange,
+        boardColor: BoardColor.brown,
         boardOrientation: PlayerColor.white,
       ),
     );
@@ -61,7 +61,7 @@ class OtherGameElements extends StatelessWidget {
     return Column(
       children: [
         ElevatedButton(
-            onPressed: () => controller.game.toggleMoveEnabled(),
+            onPressed: () => controller.toggleMoveEnabled(),
             child: const Text('Toggle move')),
         Expanded(
           child: ValueListenableBuilder<Chess>(
