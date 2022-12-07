@@ -168,11 +168,14 @@ class ChessBoardController extends ValueNotifier<ExtendedChess> {
   void toggleMoveEnabled() => game.enableUserMoves = !(game.enableUserMoves);
 
   void historyModeRewind() {
-    game.historyPgns = [game.pgn()] + game.historyPgns;
+    final String pgn = game.pgn();
+    game.historyPgns = [pgn] + game.historyPgns;
+    this.undoMove();
   }
 
   void historyModeFastForward() {
     game.historyPgns = game.historyPgns.sublist(1);
+    this.loadPGN(game.historyPgns[0]);
   }
 
   void toggleChessBoardMode() => (game.chessBoardMode == ChessBoardMode.play)
