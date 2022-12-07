@@ -31,7 +31,6 @@ class ChessBoard extends StatefulWidget {
     Key? key,
     required this.controller,
     this.size,
-    //this.enableUserMoves = true,
     this.boardColor = BoardColor.brown,
     this.boardOrientation = PlayerColor.white,
     this.onMove,
@@ -43,6 +42,24 @@ class ChessBoard extends StatefulWidget {
 }
 
 class _ChessBoardState extends State<ChessBoard> {
+  late Image _boardImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _boardImage = Image.asset(
+      "images/dark_brown_board.png",
+      package: 'flutter_chess_board',
+      fit: BoxFit.cover,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    precacheImage(_boardImage.image, context);
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Chess>(
@@ -54,7 +71,7 @@ class _ChessBoardState extends State<ChessBoard> {
           child: Stack(
             children: [
               AspectRatio(
-                child: _getBoardImage(widget.boardColor),
+                child: _boardImage,
                 aspectRatio: 1.0,
               ),
               AspectRatio(

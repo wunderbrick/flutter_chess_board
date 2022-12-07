@@ -21,29 +21,30 @@ class MyApp extends StatelessWidget {
             title: const Text('Chess Demo'),
           ),
           body: Column(children: [
-            Expanded(child: Center(child: HomePage(controller: controller))),
+            Expanded(
+                child: Center(child: ChessBoardView(controller: controller))),
             Expanded(child: OtherGameElements(controller: controller))
           ]),
         ));
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required this.controller}) : super(key: key);
+class ChessBoardView extends StatefulWidget {
+  const ChessBoardView({Key? key, required this.controller}) : super(key: key);
 
   final ChessBoardController controller;
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _ChessBoardViewState createState() => _ChessBoardViewState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _ChessBoardViewState extends State<ChessBoardView> {
   @override
   Widget build(BuildContext context) {
     return Center(
       child: ChessBoard(
         controller: widget.controller,
-        boardColor: BoardColor.brown,
+        boardColor: BoardColor.darkBrown,
         boardOrientation: PlayerColor.white,
       ),
     );
