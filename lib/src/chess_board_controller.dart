@@ -8,9 +8,6 @@ class ExtendedChess extends Chess {
   ExtendedChess(game);
   late Chess game;
   bool enableUserMoves = true;
-  ChessBoardMode chessBoardMode = ChessBoardMode.play;
-  String playPgnHistoryStash = '';
-  List<String> historyPgns = [];
 }
 
 class ChessBoardController extends ValueNotifier<ExtendedChess> {
@@ -164,33 +161,9 @@ class ChessBoardController extends ValueNotifier<ExtendedChess> {
     }
   }
 
-  // Custom methods
-  void toggleMoveEnabled() => game.enableUserMoves = !(game.enableUserMoves);
-
-  void historyModeRewind() {
-    final String pgn = game.pgn();
-    game.historyPgns = [pgn] + game.historyPgns;
-    this.undoMove();
-  }
-
-  void historyModeFastForward() {
-    game.historyPgns = game.historyPgns.sublist(1);
-    this.loadPGN(game.historyPgns[0]);
-  }
-
-  void toggleChessBoardMode() => (game.chessBoardMode == ChessBoardMode.play)
-      ? ChessBoardMode.history
-      : ChessBoardMode.play;
-
-  void stashPlayPgn() => game.playPgnHistoryStash = game.pgn();
-
-  void clearHistoryPgns() => game.historyPgns = [];
-
-  List<String> get historyPgns {
-    return game.historyPgns;
-  }
-
-  String get playPgnHistoryStash {
-    return game.playPgnHistoryStash;
+  // Custom method
+  void toggleMoveEnabled() {
+    game.enableUserMoves = !(game.enableUserMoves);
+    notifyListeners();
   }
 }
