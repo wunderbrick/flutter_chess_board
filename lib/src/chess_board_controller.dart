@@ -181,4 +181,16 @@ class ChessBoardController extends ValueNotifier<ExtendedChess> {
   void toggleChessBoardMode() => (game.chessBoardMode == ChessBoardMode.play)
       ? ChessBoardMode.history
       : ChessBoardMode.play;
+
+  void stashPlayPgn() => game.playPgnHistoryStash = game.pgn();
+
+  void clearHistoryPgns() => game.historyPgns = [];
+
+  List<String> get historyPgns {
+    return game.historyPgns;
+  }
+
+  String get playPgnHistoryStash {
+    return game.playPgnHistoryStash;
+  }
 }
