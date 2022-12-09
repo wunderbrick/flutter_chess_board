@@ -61,9 +61,6 @@ class OtherGameElements extends StatelessWidget {
   build(BuildContext context) {
     return Column(
       children: [
-        ElevatedButton(
-            onPressed: () => controller.toggleMoveEnabled(),
-            child: const Text('Toggle move')),
         Expanded(
           child: ValueListenableBuilder<Chess>(
             valueListenable: controller,

@@ -161,9 +161,14 @@ class ChessBoardController extends ValueNotifier<ExtendedChess> {
     }
   }
 
-  // Custom method
-  void toggleMoveEnabled() {
-    game.enableUserMoves = !(game.enableUserMoves);
+  // Custom methods
+  void enableUserMoves() {
+    game.enableUserMoves = true;
+    notifyListeners();
+  }
+
+  void disableUserMoves() {
+    game.enableUserMoves = false;
     notifyListeners();
   }
 }
