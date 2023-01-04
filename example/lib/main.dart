@@ -61,6 +61,11 @@ class OtherGameElements extends StatelessWidget {
   build(BuildContext context) {
     return Column(
       children: [
+        ElevatedButton(
+            child: const Text('disable drag'),
+            onPressed: () => (controller.game.enableUserMoves)
+                ? controller.disableUserMoves()
+                : controller.enableUserMoves()),
         Expanded(
           child: ValueListenableBuilder<Chess>(
             valueListenable: controller,

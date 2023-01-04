@@ -15,9 +15,6 @@ class ChessBoard extends StatefulWidget {
   /// Size of chessboard
   final double? size;
 
-  /// A boolean which checks if the user should be allowed to make moves
-  //final bool enableUserMoves;
-
   /// The color type of the board
   final BoardColor boardColor;
 
@@ -99,6 +96,10 @@ class _ChessBoardState extends State<ChessBoard> {
 
                     var draggable = game.get(squareName) != null
                         ? Draggable<PieceMoveData>(
+                            maxSimultaneousDrags:
+                                (!widget.controller.game.enableUserMoves)
+                                    ? 0
+                                    : null,
                             child: piece,
                             feedback: piece,
                             childWhenDragging: SizedBox(),
