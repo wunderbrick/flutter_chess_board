@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:chess/chess.dart' hide State;
+import 'package:flutter/rendering.dart';
 import 'board_arrow.dart';
 import 'chess_board_controller.dart';
 import 'constants.dart';
@@ -41,6 +42,8 @@ class ChessBoard extends StatefulWidget {
 class _ChessBoardState extends State<ChessBoard> {
   late Image _boardImage;
 
+  int? _selected;
+
   @override
   void initState() {
     super.initState();
@@ -68,10 +71,6 @@ class _ChessBoardState extends State<ChessBoard> {
           child: Stack(
             children: [
               AspectRatio(
-                child: _boardImage,
-                aspectRatio: 1.0,
-              ),
-              AspectRatio(
                 aspectRatio: 1.0,
                 child: GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -94,7 +93,15 @@ class _ChessBoardState extends State<ChessBoard> {
                       game: game,
                     );
 
-                    var draggable = game.get(squareName) != null
+                    final bool inhabitedByPiece = game.get(squareName) != null;
+
+                    final thePieceMoveData = PieceMoveData(
+                      squareName: squareName,
+                      pieceType: pieceOnSquare?.type.toUpperCase() ?? 'P',
+                      pieceColor: pieceOnSquare?.color ?? Color.WHITE,
+                    );
+
+                    var draggable = inhabitedByPiece
                         ? Draggable<PieceMoveData>(
                             maxSimultaneousDrags:
                                 (!widget.controller.game.enableUserMoves)
@@ -103,54 +110,91 @@ class _ChessBoardState extends State<ChessBoard> {
                             child: piece,
                             feedback: piece,
                             childWhenDragging: SizedBox(),
-                            data: PieceMoveData(
-                              squareName: squareName,
-                              pieceType:
-                                  pieceOnSquare?.type.toUpperCase() ?? 'P',
-                              pieceColor: pieceOnSquare?.color ?? Color.WHITE,
-                            ),
+                            data: thePieceMoveData,
                           )
                         : Container();
 
-                    var dragTarget =
-                        DragTarget<PieceMoveData>(builder: (context, list, _) {
-                      return draggable;
-                    }, onWillAccept: (pieceMoveData) {
-                      return widget.controller.game.enableUserMoves;
-                    }, onAccept: (PieceMoveData pieceMoveData) async {
-                      // A way to check if move occurred.
-                      Color moveColor = game.turn;
+                    var dragTarget = DragTarget<PieceMoveData>(
+                        builder: (context, list, _) {
+                          return draggable;
+                        },
+                        onWillAcceptWithDetails: (pieceMoveData) {
+                          return widget.controller.game.enableUserMoves;
+                        },
+                        onAccept: (pieceMoveData) =>
+                            _makeTheMove(squareName, game, pieceMoveData));
 
-                      if (pieceMoveData.pieceType == "P" &&
-                          ((pieceMoveData.squareName[1] == "7" &&
-                                  squareName[1] == "8" &&
-                                  pieceMoveData.pieceColor == Color.WHITE) ||
-                              (pieceMoveData.squareName[1] == "2" &&
-                                  squareName[1] == "1" &&
-                                  pieceMoveData.pieceColor == Color.BLACK))) {
-                        var val = await _promotionDialog(context);
+                    var lightOrDark;
 
-                        if (val != null) {
-                          widget.controller.makeMoveWithPromotion(
-                            from: pieceMoveData.squareName,
-                            to: squareName,
-                            pieceToPromoteTo: val,
-                          );
-                        } else {
-                          return;
-                        }
-                      } else {
-                        widget.controller.makeMove(
-                          from: pieceMoveData.squareName,
-                          to: squareName,
-                        );
-                      }
-                      if (game.turn != moveColor) {
-                        widget.onMove?.call();
-                      }
-                    });
+                    if (row.isEven && column.isEven) {
+                      lightOrDark = SquareColor.light;
+                    }
 
-                    return dragTarget;
+                    if (row.isEven && column.isOdd) {
+                      lightOrDark = SquareColor.dark;
+                    }
+
+                    if (row.isOdd && column.isOdd) {
+                      lightOrDark = SquareColor.light;
+                    }
+
+                    if (row.isOdd && column.isEven) {
+                      lightOrDark = SquareColor.dark;
+                    }
+
+                    final BoardSquare boardSquare = BoardSquare(
+                        lightOrDark: lightOrDark, child: dragTarget);
+
+                    final List<dynamic> moves = game
+                            .generate_moves(
+                                {'square': squareName, 'legal': true})
+                            .map((m) => m.toAlgebraic)
+                            .toList()
+                        //.reversed
+                        //.toList()
+                        ;
+
+                    print(index);
+                    //print(moves);
+
+                    final Semantics? moveSemanticsTree =
+                        _createPossibleMovesSemanticsTree(
+                            moves,
+                            Semantics(child: boardSquare),
+                            game,
+                            thePieceMoveData);
+
+                    return (inhabitedByPiece)
+                        // Only give semantic nodes to squares inhabited by pieces to prevent the need for endless swiping to get anywhere
+                        ? GestureDetector(
+                            child: Semantics(
+                                label: (_selected == index)
+                                    ? '$_selected selected'
+                                    : '$index unselected',
+                                child: (_selected == index)
+                                    ? moveSemanticsTree
+                                    : boardSquare,
+                                onTap: () => setState(() {
+                                      if (_selected == index) {
+                                        _selected = null;
+
+                                        SemanticsService.announce(
+                                            '$index unselected',
+                                            TextDirection.ltr);
+                                      } else {
+                                        _selected = index;
+
+                                        SemanticsService.announce(
+                                            '$index selected',
+                                            TextDirection.ltr);
+                                      }
+                                    })))
+                        : (_selected == index)
+                            ? Semantics(
+                                label: 'Undo move',
+                                child: boardSquare,
+                                onTap: () => widget.controller.undoMove())
+                            : boardSquare;
                   },
                   itemCount: 64,
                   shrinkWrap: true,
@@ -173,6 +217,75 @@ class _ChessBoardState extends State<ChessBoard> {
         );
       },
     );
+  }
+
+  Semantics? _createPossibleMovesSemanticsTree(
+      List<dynamic> moves, Semantics? acc, game, pieceMoveData) {
+    _makeMove(String theMove) {
+      final moveTrimmed =
+          theMove.replaceAll(RegExp(r'\('), '').replaceAll(RegExp(r'\)'), '');
+
+      _makeTheMove(moveTrimmed, game, pieceMoveData);
+
+      SemanticsService.announce('Move made', TextDirection.rtl);
+    }
+
+    if (moves.isEmpty) {
+      return acc;
+    }
+
+    if (moves.length == 1) {
+      return _createPossibleMovesSemanticsTree(
+          [],
+          Semantics(
+              label: moves.first.toString(),
+              onTap: () => _makeMove(moves.first.toString()),
+              child: acc),
+          game,
+          pieceMoveData);
+    }
+
+    return _createPossibleMovesSemanticsTree(
+        [moves.getRange(1, moves.length)],
+        Semantics(
+            label: moves.first.toString(),
+            onTap: () => _makeMove(moves.first.toString()),
+            child: acc),
+        game,
+        pieceMoveData);
+  }
+
+  void _makeTheMove(toSquareName, game, PieceMoveData pieceMoveData) async {
+    // A way to check if move occurred.
+    Color moveColor = game.turn;
+
+    if (pieceMoveData.pieceType == "P" &&
+        ((pieceMoveData.squareName[1] == "7" &&
+                toSquareName[1] == "8" &&
+                pieceMoveData.pieceColor == Color.WHITE) ||
+            (pieceMoveData.squareName[1] == "2" &&
+                toSquareName[1] == "1" &&
+                pieceMoveData.pieceColor == Color.BLACK))) {
+      var val = await _promotionDialog(context);
+
+      if (val != null) {
+        widget.controller.makeMoveWithPromotion(
+          from: pieceMoveData.squareName,
+          to: toSquareName,
+          pieceToPromoteTo: val,
+        );
+      } else {
+        return;
+      }
+    } else {
+      widget.controller.makeMove(
+        from: pieceMoveData.squareName,
+        to: toSquareName,
+      );
+    }
+    if (game.turn != moveColor) {
+      widget.onMove?.call();
+    }
   }
 
   /// Returns the board image
@@ -250,15 +363,33 @@ class _ChessBoardState extends State<ChessBoard> {
   }
 }
 
-class BoardPiece extends StatelessWidget {
-  final String squareName;
-  final Chess game;
+enum SquareColor { light, dark }
 
+class BoardSquare extends StatelessWidget {
+  const BoardSquare({Key? key, required this.lightOrDark, this.child})
+      : super(key: key);
+
+  final SquareColor lightOrDark;
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return (lightOrDark == SquareColor.light)
+        ? Container(color: Colors.yellow, child: child)
+        : Container(color: Colors.brown, child: child);
+  }
+}
+
+class BoardPiece extends StatelessWidget {
   const BoardPiece({
     Key? key,
     required this.squareName,
     required this.game,
   }) : super(key: key);
+
+  final String squareName;
+  final Chess game;
 
   @override
   Widget build(BuildContext context) {
