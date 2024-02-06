@@ -145,7 +145,7 @@ class _ChessBoardState extends State<ChessBoard> {
                     final BoardSquare boardSquare = BoardSquare(
                         lightOrDark: lightOrDark, child: dragTarget);
 
-                    final List<dynamic> moves = game
+                    final List<String> moves = game
                             .generate_moves(
                                 {'square': squareName, 'legal': true})
                             .map((m) => m.toAlgebraic)
@@ -155,7 +155,7 @@ class _ChessBoardState extends State<ChessBoard> {
                         ;
 
                     print(index);
-                    //print(moves);
+                    print(moves);
 
                     final Semantics? moveSemanticsTree =
                         _createPossibleMovesSemanticsTree(
@@ -169,8 +169,8 @@ class _ChessBoardState extends State<ChessBoard> {
                         ? GestureDetector(
                             child: Semantics(
                                 label: (_selected == index)
-                                    ? '$_selected selected'
-                                    : '$index unselected',
+                                    ? '${pieceOnSquare?.type.name} at $squareName selected'
+                                    : '${pieceOnSquare?.type.name} at $squareName unselected',
                                 child: (_selected == index)
                                     ? moveSemanticsTree
                                     : boardSquare,
@@ -220,7 +220,7 @@ class _ChessBoardState extends State<ChessBoard> {
   }
 
   Semantics? _createPossibleMovesSemanticsTree(
-      List<dynamic> moves, Semantics? acc, game, pieceMoveData) {
+      List<String> moves, Semantics? acc, game, pieceMoveData) {
     _makeMove(String theMove) {
       final moveTrimmed =
           theMove.replaceAll(RegExp(r'\('), '').replaceAll(RegExp(r'\)'), '');
@@ -238,18 +238,18 @@ class _ChessBoardState extends State<ChessBoard> {
       return _createPossibleMovesSemanticsTree(
           [],
           Semantics(
-              label: moves.first.toString(),
-              onTap: () => _makeMove(moves.first.toString()),
+              label: moves.first,
+              onTap: () => _makeMove(moves.first),
               child: acc),
           game,
           pieceMoveData);
     }
 
     return _createPossibleMovesSemanticsTree(
-        [moves.getRange(1, moves.length)],
+        moves.getRange(1, moves.length).toList(),
         Semantics(
-            label: moves.first.toString(),
-            onTap: () => _makeMove(moves.first.toString()),
+            label: moves.first,
+            onTap: () => _makeMove(moves.first),
             child: acc),
         game,
         pieceMoveData);
