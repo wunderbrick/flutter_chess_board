@@ -41,6 +41,7 @@ class ChessBoard extends StatefulWidget {
 
 class _ChessBoardState extends State<ChessBoard> {
   late Image _boardImage;
+  final GlobalKey mykey = GlobalKey();
 
   int? _selected;
 
@@ -57,6 +58,12 @@ class _ChessBoardState extends State<ChessBoard> {
   @override
   void didChangeDependencies() {
     precacheImage(_boardImage.image, context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This is not recommended and this whole approach is probably a dead end
+      mykey.currentContext
+          ?.findRenderObject()
+          ?.sendSemanticsEvent(const FocusSemanticEvent());
+    });
     super.didChangeDependencies();
   }
 
@@ -150,12 +157,13 @@ class _ChessBoardState extends State<ChessBoard> {
                                 {'square': squareName, 'legal': true})
                             .map((m) => m.toAlgebraic)
                             .toList()
+                        // TODO: reverse or not? Right now farthest away move comes first in semantics tree.
                         //.reversed
                         //.toList()
                         ;
 
-                    print(index);
-                    print(moves);
+                    //print(index);
+                    //print(moves);
 
                     final Semantics? moveSemanticsTree =
                         _createPossibleMovesSemanticsTree(
@@ -167,6 +175,7 @@ class _ChessBoardState extends State<ChessBoard> {
                     return (inhabitedByPiece)
                         // Only give semantic nodes to squares inhabited by pieces to prevent the need for endless swiping to get anywhere
                         ? GestureDetector(
+                            excludeFromSemantics: true,
                             child: Semantics(
                                 label: (_selected == index)
                                     ? '${pieceOnSquare?.type.name} at $squareName selected'
@@ -175,6 +184,7 @@ class _ChessBoardState extends State<ChessBoard> {
                                     ? moveSemanticsTree
                                     : boardSquare,
                                 onTap: () => setState(() {
+                                      print(index);
                                       if (_selected == index) {
                                         _selected = null;
 
@@ -189,12 +199,17 @@ class _ChessBoardState extends State<ChessBoard> {
                                             TextDirection.ltr);
                                       }
                                     })))
-                        : (_selected == index)
+                        : (_selected == (index - 1))
+                            // No idea why I need the minus 1 above
+                            // Make square piece was moved from undo with semantic focus so we don't lose a11y focus
+                            // TODO: still lose it sometimes, not sure why
                             ? Semantics(
-                                label: 'Undo move',
+                                key: mykey,
+                                label: 'index is $index',
                                 child: boardSquare,
                                 onTap: () => widget.controller.undoMove())
-                            : boardSquare;
+                            : Semantics(
+                                label: 'uninhabited', child: boardSquare);
                   },
                   itemCount: 64,
                   shrinkWrap: true,
@@ -553,5 +568,31 @@ class _ArrowPainter extends CustomPainter {
   @override
   bool shouldRepaint(_ArrowPainter oldDelegate) {
     return arrows != oldDelegate.arrows;
+  }
+}
+
+// This is ridiculous, but without it, TalkBack almost always focuses on FloatingActionButton instead of the screen title. Keeping for now.
+class A11yFutureWidget extends StatelessWidget {
+  const A11yFutureWidget({Key? key, required this.child}) : super(key: key);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.of(context).accessibleNavigation) {
+      return FutureBuilder(
+          future: Future.delayed(const Duration(milliseconds: 100), () {
+            return child;
+          }),
+          builder: (BuildContext context, AsyncSnapshot<Widget?> snapshot) {
+            if (snapshot.hasData) {
+              return child;
+            } else {
+              return Container();
+            }
+          });
+    } else {
+      return child;
+    }
   }
 }
