@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_chess_board/flutter_chess_board.dart';
 
 void main() {
@@ -11,7 +12,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ChessBoardController controller = ChessBoardController();
+    //debugDumpSemanticsTree();
     return MaterialApp(
+        //showSemanticsDebugger: true,
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
@@ -42,7 +45,7 @@ class _ChessBoardViewState extends State<ChessBoardView> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ChessBoard(
+      child: ChessBoardA11y(
         controller: widget.controller,
         boardColor: BoardColor.darkBrown,
         boardOrientation: PlayerColor.white,

@@ -41,7 +41,6 @@ class ChessBoard extends StatefulWidget {
 
 class _ChessBoardState extends State<ChessBoard> {
   late Image _boardImage;
-  final GlobalKey mykey = GlobalKey();
 
   int? _selected;
 
@@ -58,12 +57,7 @@ class _ChessBoardState extends State<ChessBoard> {
   @override
   void didChangeDependencies() {
     precacheImage(_boardImage.image, context);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // This is not recommended and this whole approach is probably a dead end
-      mykey.currentContext
-          ?.findRenderObject()
-          ?.sendSemanticsEvent(const FocusSemanticEvent());
-    });
+
     super.didChangeDependencies();
   }
 
@@ -150,7 +144,9 @@ class _ChessBoardState extends State<ChessBoard> {
                     }
 
                     final BoardSquare boardSquare = BoardSquare(
-                        lightOrDark: lightOrDark, child: dragTarget);
+                        lightOrDark: lightOrDark,
+                        child: dragTarget //Text(pieceOnSquare?.type.name ?? '')
+                        );
 
                     final List<String> moves = game
                             .generate_moves(
@@ -199,12 +195,12 @@ class _ChessBoardState extends State<ChessBoard> {
                                             TextDirection.ltr);
                                       }
                                     })))
-                        : (_selected == (index - 1))
+                        : (_selected == index)
                             // No idea why I need the minus 1 above
                             // Make square piece was moved from undo with semantic focus so we don't lose a11y focus
                             // TODO: still lose it sometimes, not sure why
                             ? Semantics(
-                                key: mykey,
+                                //key: mykey,
                                 label: 'index is $index',
                                 child: boardSquare,
                                 onTap: () => widget.controller.undoMove())
