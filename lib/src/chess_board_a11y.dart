@@ -200,7 +200,7 @@ class _ChessBoardState extends State<ChessBoardA11y> {
                 explicitChildNodes: true,
                 child: Semantics(
                     child: buildPieceSemanticsTree(
-                        playerPMD,
+                        opponentPMD,
                         (pmd) {},
                         Semantics(
                             // TODO: child widget with SizedText we can pass in
