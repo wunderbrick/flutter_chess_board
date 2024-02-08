@@ -63,17 +63,10 @@ List<PieceMoveData> getAllPieceMoveData(
   }));
 }
 
-List<PieceMoveData> getAllPlayerPieceMoveData(
+List<PieceMoveData> getAllPieceMoveDataForColor(
     List<PieceMoveData> allPieceMoveData, PlayerColor boardOrientation) {
   return allPieceMoveData
       .where((p) => matchColors(boardOrientation, p.pieceColor))
-      .toList();
-}
-
-List<PieceMoveData> getAllOpponentPieceMoveData(
-    List<PieceMoveData> allPieceMoveData, PlayerColor boardOrientation) {
-  return allPieceMoveData
-      .where((p) => !matchColors(boardOrientation, p.pieceColor))
       .toList();
 }
 
@@ -156,9 +149,9 @@ class _ChessBoardState extends State<ChessBoardA11y> {
             getAllPieceMoveData(game, widget.boardOrientation, squares);
 
         final List<PieceMoveData> playerPMD =
-            getAllPlayerPieceMoveData(allPDM, widget.boardOrientation);
+            getAllPieceMoveDataForColor(allPDM, widget.boardOrientation);
 
-        final List<PieceMoveData> opponentPMD = getAllOpponentPieceMoveData(
+        final List<PieceMoveData> opponentPMD = getAllPieceMoveDataForColor(
             allPDM,
             (widget.boardOrientation == PlayerColor.black)
                 ? PlayerColor.white
